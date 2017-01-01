@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using System.Security.Principal;
-using System.Windows.Shell;
 
 namespace SMOL {
     class Program {
@@ -15,30 +14,33 @@ namespace SMOL {
             if (IsAdministrator()) {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 //VARS
-                string config = @"SMOL_Config.json";
-                string www = @"www\";
-                string title = @"SMOL";
-                string json = JsonConvert.SerializeObject(new Config(80, title));
+                string config = @"config.json";
+                string chat = @"chat.json";
+                string title = @"Online SMS";
+                string json = JsonConvert.SerializeObject(new Config(4269, title));
+                string chatj = JsonConvert.SerializeObject(new Out(new List<string>(), new List<Message>()));
                 //Makes Config
                 if (!File.Exists(config)) {
                     File.Create(config).Close();
                     File.WriteAllText(config, json);
                     sysout(string.Format("Creating {0}", config));
                 }
-                if (!Directory.Exists(www)) {
-                    Directory.CreateDirectory(www);
-                    sysout(string.Format("Creating {0}", www));
+                //Makes Chat
+                if (!File.Exists(chat)) {
+                    File.Create(chat).Close();
+                    File.WriteAllText(chat, chatj);
+                    sysout(string.Format("Creating {0}", chat));
                 }
                 //Read Config
                 string jek = File.ReadAllText(config);
                 Config jekk = JsonConvert.DeserializeObject<Config>(jek);
                 //Make Server
                 Console.Title = jekk.title;
-                SimpleHTTPServer server = new SimpleHTTPServer(www, jekk.port);
+                SimpleSMSServer server = new SimpleSMSServer("\\", jekk.port);
                 //Hi
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("SMOL Webserver Started On Port {0}", jekk.port);
-                Console.WriteLine("Type Exit Or Stop To Close The Webserver");
+                Console.WriteLine("Online SMS Webserver Started On Port {0}", jekk.port);
+                Console.WriteLine("Type Exit Or Stop To Close The Server");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 //exit
                 while (true) {
@@ -52,6 +54,7 @@ namespace SMOL {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You Do Not Have Administrator Permisions");
             }
+            Console.ReadKey();
         }
 
         public static bool IsAdministrator() {
